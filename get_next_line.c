@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:43 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/06 19:03:33 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/10 15:10:15 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,83 +15,133 @@
 #include "get_next_line.h"
 #include <stdio.h>
 
-int	is_in_string(char *str, char c)
+int	get_line_end(t_buffer *buf)
+{
+	int		i;
+
+	i = 0;
+	while (buf->buffer[i] != '\n' && buf->buffer[i] != '\0')
+		i++;
+	return (i);
+}
+
+int	is_end_line(char *read_buffer, int size)
 {
 	int	i;
 
 	i = 0;
-	while (i < BUFFER_SIZE)
+	while (i < size)
 	{
-		if (str[i] == c)
+		if (read_buffer[i] == '\n' || read_buffer[i] == '\0')
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-int	get_line_end(char *buffer)
-{
-	int		i;
-	//int		j;
-	//int		len;
-	//int		nb;
-	//char	*res;
-
-	i = 0;
-	//nb = 0;
-	while (buffer[i] != '\n' && buffer[i] != '\0')
-		i++;
-	return (i);
-	/*len = 1;
-	while (buffer[i + len] != '\0' && buffer[i + len] != '\n')
-		len++;
-	if (len == 0)
-		return (NULL);
-	res = malloc(sizeof(char) * (len + 2));
-	if (res == NULL)
-		return (NULL);
-	j = 0;
-	while (j <= len)
-	{
-		res[j] = buffer[i + j];
-		j++;
-	}
-	res[j] = '\0';
-	return (res);*/
-}
-
-void	buffer_shift(char *buffer, int shift)
+void	clear_buffer(char *read_buffer)
 {
 	int	i;
 
 	i = 0;
-	while (buffer[i] != '\0')
-		i++;
-	if (i <= shift)
-		return ;
-	i = 0;
-	while (buffer[i + shift] != '\0')
+	while (i < BUFFER_SIZE)
 	{
-		buffer[i] = buffer[i + shift];
+		read_buffer[i] = '\0';
 		i++;
 	}
-	buffer[i] = '\0';
+}
+
+void	buffer_shift(t_buffer *buf, int shift)
+{
+	int	i;
+
+	i = 0;
+	while (buf->buffer[i] != '\0')
+		i++;
+	if (i < shift)
+		return ;
+	i = 0;
+	while (buf->buffer[i + shift] != '\0')
+	{
+		buf->buffer[i] = buf->buffer[i + shift];
+		i++;
+	}
+	buf->buffer[i] = '\0';
+	buf->size -= shift;
+}
+#include <stdio.h>
+void	add_to_buffer(t_buffer *buf, char *read_buffer)
+{
+	int		i;
+	int		j;
+	char	*res;
+
+	i = 0;
+	while (buf->buffer[i] != '\0')
+		i++;
+	j = 0;
+	while(read_buffer[j] != '\0' && j < BUFFER_SIZE)
+		j++;
+	res = malloc(sizeof(char) * (i + j + 1));
+	if (res == NULL)
+		return ;
+	i = 0;
+	while (buf->buffer[i] != '\0')
+	{
+		res[i] = buf->buffer[i];
+		i++;
+	}
+	j = 0;
+	while(read_buffer[j] != '\0' && j < BUFFER_SIZE)
+	{
+		res[i + j] = read_buffer[j];
+		j++;
+	}
+	res[i + j] = '\0';
+	free(buf->buffer);
+	buf->buffer = res;
+	buf->size = i + j - 1;
+}
+
+void	set_buffer(t_buffer *buf, int fd)
+{
+	int		read_len;
+	char	*read_buffer;
+
+	if (buf->buffer == NULL)
+	{
+		buf->buffer = malloc(sizeof(char));
+		if (buf->buffer == NULL)
+			return ;
+		buf->buffer[0] = '\0';
+		buf->size = 0;
+		read_buffer = malloc(sizeof(char) * BUFFER_SIZE);
+		if (read_buffer == NULL)
+			return ;
+	}
+	if (is_end_line(buf->buffer, buf->size - 1) == 0)
+	{
+		read_len = read(fd, read_buffer, BUFFER_SIZE);
+		while (read_len > 0 && is_end_line(read_buffer, BUFFER_SIZE) == 0)
+		{
+			add_to_buffer(buf, read_buffer);
+			clear_buffer(read_buffer);
+			read_len = read(fd, read_buffer, BUFFER_SIZE);
+		}
+		if (read_len > 0 && is_end_line(read_buffer, BUFFER_SIZE))
+			add_to_buffer(buf, read_buffer);
+	}
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static t_buffer	buf;
 	char		*res;
 	int			i;
 	int			len;
 
-	if (buffer == NULL)
-	{
-		buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-		i = read(fd, buffer, BUFFER_SIZE);
-		buffer[i] = '\0';
-	}
-	len = get_line_end(buffer);
+	set_buffer(&buf, fd);
+	len = get_line_end(&buf);
 	if (len == 0)
 		return (NULL);
 	res = malloc(sizeof(char) * (len + 2));
@@ -100,10 +150,10 @@ char	*get_next_line(int fd)
 	i = 0;
 	while (i <= len)
 	{
-		res[i] = buffer[i];
+		res[i] = buf.buffer[i];
 		i++;
 	}
 	res[i] = '\0';
-	buffer_shift(buffer, len);
+	buffer_shift(&buf, len + 1);
 	return (res);
 }
