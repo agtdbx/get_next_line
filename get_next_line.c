@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:43 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/11 16:12:28 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/11 16:35:14 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int	get_end_line(char *buffer)
 	int	i;
 
 	if (buffer == NULL)
-		return (-1);
+		return (-2);
 	i = 0;
 	while (buffer[i] != '\0')
 	{
@@ -86,7 +86,7 @@ char	*get_next_line(int fd)
 	if (end_file == 0)
 		buffer = read_line(buffer, fd, &end_file);
 	end_line = get_end_line(buffer) + 1;
-	if (end_line == 0)
+	if (end_line == -1)
 		return (NULL);
 	res = ft_substr(buffer, 0, end_line);
 	buffer_shift(buffer, end_line);

@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/04 15:05:46 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/11 15:58:09 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/11 16:32:02 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ char	*ft_substr(char const *s, unsigned int start, int len);
 
 int		get_end_line(char *buffer);
 char	*read_line(char *buffer, int fd, int *end_file);
+void	buffer_shift(char *buffer, int shift);
 char	*get_next_line(int fd);
 
 #endif
