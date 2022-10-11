@@ -6,11 +6,10 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:43 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/11 16:35:14 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/11 17:52:00 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
 #include "get_next_line.h"
 
 int	get_end_line(char *buffer)
@@ -42,6 +41,8 @@ char	*read_line(char *buffer, int fd, int *end_file)
 		read_buffer[0] = '\0';
 		read_len = read(fd, read_buffer, BUFFER_SIZE);
 		read_buffer[read_len] = '\0';
+		if (read_len == 0)
+			return (free_buffers_and_return(&buffer, &read_buffer, end_file));
 		buffer = ft_strjoin(buffer, read_buffer);
 		while (get_end_line(buffer) == -1 && read_len == BUFFER_SIZE)
 		{
@@ -69,6 +70,15 @@ void	buffer_shift(char *buffer, int shift)
 	buffer[i] = '\0';
 }
 
+void	free_buffer(char **buffer, int end_file)
+{
+	if (end_file == 1 && ft_strlen(*buffer) == 0)
+	{
+		free(*buffer);
+		*buffer = NULL;
+	}
+}
+
 char	*get_next_line(int fd)
 {
 	static char	*buffer = NULL;
@@ -76,6 +86,8 @@ char	*get_next_line(int fd)
 	int			end_line;
 	static int	end_file = 0;
 
+	if (is_invalid_params(fd))
+		return (NULL);
 	if (buffer == NULL && end_file == 0)
 	{
 		buffer = malloc(sizeof(char));
@@ -88,12 +100,10 @@ char	*get_next_line(int fd)
 	end_line = get_end_line(buffer) + 1;
 	if (end_line == -1)
 		return (NULL);
+	if (end_line == 0)
+		end_line = ft_strlen(buffer);
 	res = ft_substr(buffer, 0, end_line);
 	buffer_shift(buffer, end_line);
-	if (end_file == 1 && ft_strlen(buffer) == 0)
-	{
-		free(buffer);
-		buffer = NULL;
-	}
+	free_buffer(&buffer, end_file);
 	return (res);
 }

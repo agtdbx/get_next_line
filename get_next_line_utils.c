@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:41 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/11 15:47:42 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/11 17:53:27 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,4 +69,24 @@ char	*ft_substr(char const *s, unsigned int start, int len)
 	}
 	res[i] = '\0';
 	return (res);
+}
+
+int	is_invalid_params(int fd)
+{
+	if (fd < 0 || fd >= 1024)
+		return (1);
+	if (read(fd, NULL, 0) == -1)
+		return (1);
+	if (BUFFER_SIZE <= 0)
+		return (1);
+	return (0);
+}
+
+void	*free_buffers_and_return(char **buffer, char **read_buffer
+		, int *end_file)
+{
+	free(*read_buffer);
+	free(*buffer);
+	*end_file = 1;
+	return (NULL);
 }
