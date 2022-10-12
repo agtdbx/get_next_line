@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:41 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/11 17:53:27 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/12 12:37:28 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,11 +82,11 @@ int	is_invalid_params(int fd)
 	return (0);
 }
 
-void	*free_buffers_and_return(char **buffer, char **read_buffer
-		, int *end_file)
+void	free_buffer(char **buffer, int end_file)
 {
-	free(*read_buffer);
-	free(*buffer);
-	*end_file = 1;
-	return (NULL);
+	if (end_file == 1 && ft_strlen(*buffer) == 0)
+	{
+		free(*buffer);
+		*buffer = NULL;
+	}
 }
