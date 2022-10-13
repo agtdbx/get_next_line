@@ -6,35 +6,51 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:43 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/13 13:50:34 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/13 14:15:43 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
+char	*read_and_check(char *buffer, char *read_buffer, int *read_len, int fd)
+{
+	int	len;
+
+	*read_len = read(fd, read_buffer, BUFFER_SIZE);
+	if (*read_len > -1)
+		read_buffer[*read_len] = '\0';
+	len = ft_strlen(buffer);
+	if (*read_len <= 0 && len == 0)
+	{
+		free(read_buffer);
+		free(buffer);
+		return (NULL);
+	}
+	return (read_buffer);
+}
+
 char	*read_line(char *buffer, int fd, int *end_file)
 {
 	char	*read_buffer;
 	int		read_len;
+	int		end_line;
 
-	if (get_end_line(buffer) == -1)
+	end_line = get_end_line(buffer);
+	if (end_line == -1)
 	{
 		read_buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 		if (read_buffer == NULL)
 			return (NULL);
 		read_buffer[0] = '\0';
-		read_len = read(fd, read_buffer, BUFFER_SIZE);
-		if (read_len > -1)
-			read_buffer[read_len] = '\0';
-		if (read_len <= 0 && ft_strlen(buffer) == 0)
+		read_buffer = read_and_check(buffer, read_buffer, &read_len, fd);
+		if (read_buffer == NULL)
 		{
-			free(read_buffer);
-			free(buffer);
 			*end_file = 1;
 			return (NULL);
 		}
 		buffer = ft_strjoin(buffer, read_buffer);
-		if (get_end_line(buffer) == -1 && read_len == BUFFER_SIZE)
+		end_line = get_end_line(buffer);
+		if (end_line == -1 && read_len == BUFFER_SIZE)
 			buffer = complete_buffer(buffer, read_buffer, end_file, fd);
 		free(read_buffer);
 	}
@@ -44,13 +60,16 @@ char	*read_line(char *buffer, int fd, int *end_file)
 char	*complete_buffer(char *buffer, char *read_buffer, int *end_file, int fd)
 {
 	int	read_len;
+	int	end_line;
 
 	read_len = BUFFER_SIZE;
-	while (get_end_line(buffer) == -1 && read_len == BUFFER_SIZE)
+	end_line = get_end_line(buffer);
+	while (end_line == -1 && read_len == BUFFER_SIZE)
 	{
 		read_len = read(fd, read_buffer, BUFFER_SIZE);
 		read_buffer[read_len] = '\0';
 		buffer = ft_strjoin(buffer, read_buffer);
+		end_line = get_end_line(buffer);
 	}
 	if (read_len != BUFFER_SIZE)
 		*end_file = 1;
@@ -60,9 +79,11 @@ char	*complete_buffer(char *buffer, char *read_buffer, int *end_file, int fd)
 void	buffer_shift(char *buffer, int shift)
 {
 	int	i;
+	int	len;
 
 	i = 0;
-	while (i + shift < ft_strlen(buffer))
+	len = ft_strlen(buffer);
+	while (i + shift < len)
 	{
 		buffer[i] = buffer[i + shift];
 		i++;

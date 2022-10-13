@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:41 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/13 13:50:36 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/13 14:13:54 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,10 @@ char	*ft_substr(char const *s, unsigned int start, int len)
 
 void	free_buffer(char **buffer, int end_file)
 {
-	if (end_file == 1 && ft_strlen(*buffer) == 0)
+	int	len;
+
+	len = ft_strlen(*buffer);
+	if (end_file == 1 && len == 0)
 	{
 		free(*buffer);
 		*buffer = NULL;
