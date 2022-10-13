@@ -6,27 +6,11 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:43 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/12 15:45:40 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/13 13:22:30 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
-
-int	get_end_line(char *buffer)
-{
-	int	i;
-
-	if (buffer == NULL)
-		return (-2);
-	i = 0;
-	while (buffer[i] != '\0')
-	{
-		if (buffer[i] == '\n')
-			return (i);
-		i++;
-	}
-	return (-1);
-}
 
 char	*read_line(char *buffer, int fd, int *end_file)
 {
@@ -40,8 +24,9 @@ char	*read_line(char *buffer, int fd, int *end_file)
 			return (NULL);
 		read_buffer[0] = '\0';
 		read_len = read(fd, read_buffer, BUFFER_SIZE);
-		read_buffer[read_len] = '\0';
-		if (read_len == 0 && ft_strlen(buffer) == 0)
+		if (read_len > -1)
+			read_buffer[read_len] = '\0';
+		if (read_len <= 0 && ft_strlen(buffer) == 0)
 		{
 			free(read_buffer);
 			free(buffer);
@@ -91,7 +76,7 @@ char	*get_next_line(int fd)
 	char			*res;
 	int				end_line;
 
-	if (is_invalid_params(fd))
+	if (fd < 0 || fd >= 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (buffer[fd].buffer == NULL && buffer[fd].end_file == 0)
 	{

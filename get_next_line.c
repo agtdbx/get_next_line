@@ -6,27 +6,11 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:43 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/12 13:42:19 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/13 13:50:34 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-int	get_end_line(char *buffer)
-{
-	int	i;
-
-	if (buffer == NULL)
-		return (-2);
-	i = 0;
-	while (buffer[i] != '\0')
-	{
-		if (buffer[i] == '\n')
-			return (i);
-		i++;
-	}
-	return (-1);
-}
 
 char	*read_line(char *buffer, int fd, int *end_file)
 {
@@ -40,8 +24,9 @@ char	*read_line(char *buffer, int fd, int *end_file)
 			return (NULL);
 		read_buffer[0] = '\0';
 		read_len = read(fd, read_buffer, BUFFER_SIZE);
-		read_buffer[read_len] = '\0';
-		if (read_len == 0 && ft_strlen(buffer) == 0)
+		if (read_len > -1)
+			read_buffer[read_len] = '\0';
+		if (read_len <= 0 && ft_strlen(buffer) == 0)
 		{
 			free(read_buffer);
 			free(buffer);
@@ -87,29 +72,29 @@ void	buffer_shift(char *buffer, int shift)
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer = NULL;
-	char		*res;
-	int			end_line;
-	static int	end_file = 0;
+	static t_buf	buffer;
+	char			*res;
+	int				end_line;
 
-	if (is_invalid_params(fd))
+	if (fd < 0 || fd >= 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
-	if (buffer == NULL && end_file == 0)
+	if (buffer.buffer == NULL && buffer.end_file == 0)
 	{
-		buffer = malloc(sizeof(char));
-		if (buffer == NULL)
+		buffer.buffer = malloc(sizeof(char));
+		if (buffer.buffer == NULL)
 			return (NULL);
-		buffer[0] = '\0';
+		buffer.buffer[0] = '\0';
 	}
-	if (end_file == 0)
-		buffer = read_line(buffer, fd, &end_file);
-	end_line = get_end_line(buffer) + 1;
+	if (buffer.end_file == 0)
+		buffer.buffer = read_line(buffer.buffer, fd,
+				&(buffer.end_file));
+	end_line = get_end_line(buffer.buffer) + 1;
 	if (end_line == -1)
 		return (NULL);
 	if (end_line == 0)
-		end_line = ft_strlen(buffer);
-	res = ft_substr(buffer, 0, end_line);
-	buffer_shift(buffer, end_line);
-	free_buffer(&buffer, end_file);
+		end_line = ft_strlen(buffer.buffer);
+	res = ft_substr(buffer.buffer, 0, end_line);
+	buffer_shift(buffer.buffer, end_line);
+	free_buffer(&(buffer.buffer), buffer.end_file);
 	return (res);
 }

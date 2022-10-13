@@ -6,7 +6,7 @@
 /*   By: aderouba <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/06 15:10:41 by aderouba          #+#    #+#             */
-/*   Updated: 2022/10/12 14:43:04 by aderouba         ###   ########.fr       */
+/*   Updated: 2022/10/13 12:58:47 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,17 +71,6 @@ char	*ft_substr(char const *s, unsigned int start, int len)
 	return (res);
 }
 
-int	is_invalid_params(int fd)
-{
-	if (fd < 0 || fd >= 1024)
-		return (1);
-	if (read(fd, NULL, 0) == -1)
-		return (1);
-	if (BUFFER_SIZE <= 0)
-		return (1);
-	return (0);
-}
-
 void	free_buffer(char **buffer, int end_file)
 {
 	if (end_file == 1 && ft_strlen(*buffer) == 0)
@@ -89,4 +78,20 @@ void	free_buffer(char **buffer, int end_file)
 		free(*buffer);
 		*buffer = NULL;
 	}
+}
+
+int	get_end_line(char *buffer)
+{
+	int	i;
+
+	if (buffer == NULL)
+		return (-2);
+	i = 0;
+	while (buffer[i] != '\0')
+	{
+		if (buffer[i] == '\n')
+			return (i);
+		i++;
+	}
+	return (-1);
 }
